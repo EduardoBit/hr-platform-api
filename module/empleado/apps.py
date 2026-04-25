@@ -1,0 +1,10 @@
+from django.apps import AppConfig
+
+
+class EmpleadoConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "modules.empleado"
+    label = "empleado"
+
+    def ready(self):
+        pass
