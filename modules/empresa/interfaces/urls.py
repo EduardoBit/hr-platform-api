@@ -3,6 +3,7 @@ from modules.empresa.interfaces.views.empresa_view import (
     ValidarRucView, RegistrarEmpresaView, EmpresaDetailView, SuspenderEmpresaView
 )
 from modules.empresa.interfaces.views.sede_view import SedeListView, SedeDetailView
+from modules.empresa.interfaces.views.administrador_view import AdministradoresView
 
 urlpatterns = [
     path("validar-ruc/<str:ruc>/", ValidarRucView.as_view()),
@@ -11,4 +12,5 @@ urlpatterns = [
     path("<int:empresa_id>/suspender/", SuspenderEmpresaView.as_view()),
     path("<int:empresa_id>/sedes/", SedeListView.as_view()),
     path("<int:empresa_id>/sedes/<int:sede_id>/", SedeDetailView.as_view()),
+    path("<int:empresa_id>/administradores/", AdministradoresView.as_view()),
 ]
