@@ -36,7 +36,7 @@ class ExportacionService:
         styles = getSampleStyleSheet()
         elements = []
 
-        elements.append(Paragraph("Reporte de Auditoría — SisRRHH", styles["Title"]))
+        elements.append(Paragraph("Reporte de Auditoría — NexusRH", styles["Title"]))
         elements.append(Paragraph(
             f"Generado: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
             styles["Normal"],

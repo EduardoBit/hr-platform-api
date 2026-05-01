@@ -19,35 +19,35 @@ class EmailService:
     def notificar_registro_empresa(self, correo: str, razon_social: str) -> None:
         self.enviar(
             destinatario=correo,
-            asunto="Bienvenido a SisRRHH",
+            asunto="Bienvenido a NexusRH",
             cuerpo=(
                 f"Estimado cliente,\n\n"
-                f"La empresa '{razon_social}' ha sido registrada exitosamente en SisRRHH.\n"
+                f"La empresa '{razon_social}' ha sido registrada exitosamente en NexusRH.\n"
                 f"Su periodo de prueba ha comenzado. Ingrese a la plataforma para configurar su cuenta.\n\n"
-                f"Equipo SisRRHH"
+                f"Equipo NexusRH"
             ),
         )
 
     def notificar_bienvenida_empleado(self, correo: str, codigo_unico: str) -> None:
         self.enviar(
             destinatario=correo,
-            asunto="Tu cuenta SisRRHH ha sido creada",
+            asunto="Tu cuenta NexusRH ha sido creada",
             cuerpo=(
-                f"Bienvenido a SisRRHH.\n\n"
+                f"Bienvenido a NexusRH.\n\n"
                 f"Tu código de acceso es: {codigo_unico}\n"
                 f"Descarga la aplicación móvil e ingresa con tu código para registrar tu asistencia.\n\n"
-                f"Equipo SisRRHH"
+                f"Equipo NexusRH"
             ),
         )
 
     def notificar_contrasena_temporal(self, correo: str, contrasena_temporal: str) -> None:
         self.enviar(
             destinatario=correo,
-            asunto="Contraseña temporal SisRRHH",
+            asunto="Contraseña temporal NexusRH",
             cuerpo=(
                 f"Tu contraseña temporal es: {contrasena_temporal}\n"
                 f"Por favor, cámbiala después de iniciar sesión.\n\n"
-                f"Equipo SisRRHH"
+                f"Equipo NexusRH"
             ),
         )
 
@@ -61,7 +61,7 @@ class EmailService:
                 f"El empleado {empleado_nombre} ha creado una solicitud de {tipo_permiso}.\n"
                 f"Período: {fecha_inicio} al {fecha_fin}.\n"
                 f"Ingrese a la plataforma para aprobar o rechazar.\n\n"
-                f"Equipo SisRRHH"
+                f"Equipo NexusRH"
             ),
         )
 
@@ -74,18 +74,18 @@ class EmailService:
             cuerpo=(
                 f"Tu solicitud de {tipo_permiso} ha sido {resultado}.\n"
                 + (f"Comentario del evaluador: {comentario}\n" if comentario else "")
-                + "\nEquipo SisRRHH"
+                + "\nEquipo NexusRH"
             ),
         )
 
     def notificar_suspension_por_pago(self, correo: str, empresa_nombre: str) -> None:
         self.enviar(
             destinatario=correo,
-            asunto="Suscripción suspendida — SisRRHH",
+            asunto="Suscripción suspendida — NexusRH",
             cuerpo=(
                 f"Estimado cliente de {empresa_nombre},\n\n"
                 f"Su suscripción ha sido suspendida por falta de pago.\n"
                 f"Por favor, regularice su situación para reactivar el acceso.\n\n"
-                f"Equipo SisRRHH"
+                f"Equipo NexusRH"
             ),
         )

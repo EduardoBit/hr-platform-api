@@ -34,7 +34,7 @@ def notificar_solicitudes_pendientes():
                 f"Existe una solicitud de {solicitud_model.tipo_permiso_nombre} "
                 f"del empleado {empleado.nombre_completo()} pendiente de revisión por más de 24 horas.\n"
                 f"Período: {solicitud_model.fecha_inicio} al {solicitud_model.fecha_fin}.\n\n"
-                f"Ingrese a la plataforma para evaluarla.\n\nEquipo SisRRHH"
+                f"Ingrese a la plataforma para evaluarla.\n\nEquipo NexusRH"
             ),
         )
 

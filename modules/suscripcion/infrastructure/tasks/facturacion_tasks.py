@@ -22,12 +22,12 @@ def verificar_trials_por_vencer():
         dias_restantes = max(0, (suscripcion.fecha_fin_trial - datetime.now()).days)
         email_service.enviar(
             destinatario=str(empresa.correo),
-            asunto="Tu periodo de prueba está por vencer — SisRRHH",
+            asunto="Tu periodo de prueba está por vencer — NexusRH",
             cuerpo=(
                 f"Estimado cliente de {empresa.razon_social},\n\n"
                 f"Tu periodo de prueba vence en {dias_restantes} día(s).\n"
-                f"Activa tu suscripción para continuar usando SisRRHH sin interrupciones.\n\n"
-                f"Equipo SisRRHH"
+                f"Activa tu suscripción para continuar usando NexusRH sin interrupciones.\n\n"
+                f"Equipo NexusRH"
             ),
         )
 
