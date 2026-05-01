@@ -50,8 +50,9 @@ class Empresa:
         direccion: str,
         logo_url: Optional[str] = None,
     ) -> None:
+        from django.utils import timezone
         self.nombre_comercial = nombre_comercial
         self.telefono = telefono
         self.direccion = direccion
         self.logo_url = logo_url
-        self.fecha_actualizacion = datetime.now()
+        self.fecha_actualizacion = timezone.now()

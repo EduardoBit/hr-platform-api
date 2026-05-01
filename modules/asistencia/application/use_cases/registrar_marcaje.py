@@ -65,6 +65,7 @@ class RegistrarMarcajeUseCase(BaseUseCase[RegistrarMarcajeInputDTO, RegistroAsis
         if self._asistencia_repository.existe_marcaje_tipo_en_fecha(input_dto.empleado_id, tipo, hoy):
             raise MarcajeDuplicadoException(tipo)
 
+        from django.utils import timezone
         registro = RegistroAsistencia(
             id=None,
             empresa_id=input_dto.empresa_id,
@@ -76,8 +77,8 @@ class RegistrarMarcajeUseCase(BaseUseCase[RegistrarMarcajeInputDTO, RegistroAsis
             es_tardanza=False,
             es_manual=False,
             justificacion_manual=None,
-            timestamp=datetime.now(),
-            fecha_creacion=datetime.now(),
+            timestamp=timezone.now(),
+            fecha_creacion=timezone.now(),
         )
 
         registro = self._asistencia_repository.save(registro)

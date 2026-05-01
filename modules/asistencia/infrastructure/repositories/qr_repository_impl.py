@@ -13,9 +13,10 @@ class DjangoQrRepository(QrRepository):
             return None
 
     def get_vigente_by_sede(self, sede_id: int) -> Optional[TokenQr]:
+        from django.utils import timezone
         model = (
             TokenQrModel.objects
-            .filter(sede_id=sede_id, es_activo=True, expira_en__gt=datetime.now())
+            .filter(sede_id=sede_id, es_activo=True, expira_en__gt=timezone.now())
             .first()
         )
         return self._to_entity(model) if model else None

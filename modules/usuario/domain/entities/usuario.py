@@ -37,8 +37,9 @@ class Usuario:
             raise MaximosIntentosAlcanzadosException(max_intentos)
 
     def registrar_acceso_exitoso(self) -> None:
+        from django.utils import timezone
         self.intentos_fallidos = 0
-        self.ultimo_acceso = datetime.now()
+        self.ultimo_acceso = timezone.now()
 
     def desbloquear(self) -> None:
         self.estado = EstadosUsuario.ACTIVO
@@ -54,5 +55,6 @@ class Usuario:
         return self.estado == EstadosUsuario.ACTIVO
 
     def cambiar_password(self, nuevo_hash: str) -> None:
+        from django.utils import timezone
         self.password_hash = nuevo_hash
-        self.fecha_actualizacion = datetime.now()
+        self.fecha_actualizacion = timezone.now()

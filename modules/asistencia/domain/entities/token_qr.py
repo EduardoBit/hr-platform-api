@@ -19,7 +19,8 @@ class TokenQr:
     @classmethod
     def crear(cls, empresa_id: int, sede_id: int, minutos_vigencia: int = QR_EXPIRY_DEFAULT_MINUTES) -> "TokenQr":
         from datetime import timedelta
-        ahora = datetime.now()
+        from django.utils import timezone
+        ahora = timezone.now()
         return cls(
             id=None,
             empresa_id=empresa_id,
@@ -31,7 +32,8 @@ class TokenQr:
         )
 
     def esta_vigente(self) -> bool:
-        return self.es_activo and datetime.now() < self.expira_en
+        from django.utils import timezone
+        return self.es_activo and timezone.now() < self.expira_en
 
     def verificar_vigencia(self) -> None:
         if not self.esta_vigente():

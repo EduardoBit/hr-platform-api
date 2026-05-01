@@ -24,8 +24,9 @@ class RegistrarManualUseCase(BaseUseCase[RegistrarManualInputDTO, RegistroAsiste
         if not empleado or empleado.empresa_id != input_dto.empresa_id:
             raise EmpleadoNoEncontradoException(str(input_dto.empleado_id))
 
+        from django.utils import timezone
         hora = datetime.strptime(input_dto.hora, "%H:%M").time()
-        timestamp = datetime.combine(input_dto.fecha, hora)
+        timestamp = timezone.make_aware(datetime.combine(input_dto.fecha, hora))
 
         registro = RegistroAsistencia(
             id=None,
@@ -39,7 +40,7 @@ class RegistrarManualUseCase(BaseUseCase[RegistrarManualInputDTO, RegistroAsiste
             es_manual=True,
             justificacion_manual=input_dto.justificacion,
             timestamp=timestamp,
-            fecha_creacion=datetime.now(),
+            fecha_creacion=timezone.now(),
         )
         registro = self._asistencia_repository.save(registro)
 

@@ -34,6 +34,7 @@ class CrearUsuarioUseCase(BaseUseCase[CrearUsuarioInputDTO, UsuarioOutputDTO]):
         codigo_unico = self._generar_codigo_unico()
         password_hash = self._password_service.hash(input_dto.contrasena)
 
+        from django.utils import timezone
         usuario = Usuario(
             id=None,
             empresa_id=input_dto.empresa_id,
@@ -44,7 +45,7 @@ class CrearUsuarioUseCase(BaseUseCase[CrearUsuarioInputDTO, UsuarioOutputDTO]):
             estado=EstadosUsuario.ACTIVO,
             intentos_fallidos=0,
             ultimo_acceso=None,
-            fecha_creacion=datetime.now(),
+            fecha_creacion=timezone.now(),
             fecha_actualizacion=None,
         )
 

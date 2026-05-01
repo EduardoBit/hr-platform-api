@@ -12,15 +12,18 @@ class DjangoRolRepository(RolRepository):
             return None
 
     def get_by_nombre(self, nombre: str, empresa_id: Optional[int] = None) -> Optional[Rol]:
+        from django.db.models import Q
         qs = RolModel.objects.filter(nombre=nombre)
         if empresa_id is not None:
-            qs = qs.filter(empresa_id=empresa_id)
+            # Buscar el rol específico de la empresa O el rol global del sistema
+            qs = qs.filter(Q(empresa_id=empresa_id) | Q(empresa_id__isnull=True))
+            # Priorizar el de la empresa si existen ambos (aunque para PROPIETARIO suele ser global)
+            qs = qs.order_by("-empresa_id")
         else:
             qs = qs.filter(empresa_id__isnull=True)
-        try:
-            return self._to_entity(qs.first())
-        except Exception:
-            return None
+        
+        result = qs.first()
+        return self._to_entity(result) if result else None
 
     def get_by_empresa(self, empresa_id: int) -> List[Rol]:
         return [

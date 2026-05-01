@@ -26,30 +26,34 @@ class RegistrarEmpresaUseCase(BaseUseCase[RegistrarEmpresaInputDTO, EmpresaOutpu
         self._notificacion_use_case = notificacion_use_case
 
     def execute(self, input_dto: RegistrarEmpresaInputDTO) -> EmpresaOutputDTO:
+        from django.db import transaction
+
         if self._empresa_repository.exists_by_ruc(input_dto.ruc):
             raise EmpresaYaRegistradaException(input_dto.ruc)
 
         datos_sunat = self._sunat_service.consultar_ruc(input_dto.ruc)
 
-        empresa = Empresa(
-            id=None,
-            ruc=Ruc(input_dto.ruc),
-            razon_social=datos_sunat["razon_social"],
-            nombre_comercial=datos_sunat["razon_social"],
-            correo=Email(input_dto.correo),
-            telefono=input_dto.telefono,
-            direccion=input_dto.direccion,
-            logo_url=None,
-            estado=EstadosEmpresa.EN_PRUEBA,
-            fecha_registro=datetime.now(),
-            fecha_actualizacion=None,
-        )
+        with transaction.atomic():
+            from django.utils import timezone
+            empresa = Empresa(
+                id=None,
+                ruc=Ruc(input_dto.ruc),
+                razon_social=datos_sunat["razon_social"],
+                nombre_comercial=datos_sunat["razon_social"],
+                correo=Email(input_dto.correo),
+                telefono=input_dto.telefono,
+                direccion=input_dto.direccion,
+                logo_url=None,
+                estado=EstadosEmpresa.EN_PRUEBA,
+                fecha_registro=timezone.now(),
+                fecha_actualizacion=None,
+            )
 
-        empresa = self._empresa_repository.save(empresa)
+            empresa = self._empresa_repository.save(empresa)
 
-        self._usuario_use_case.crear_propietario(empresa.id, input_dto.correo, input_dto.contrasena)
-        self._suscripcion_use_case.activar_trial(empresa.id, input_dto.plan_id)
-        self._notificacion_use_case.notificar_registro_empresa(input_dto.correo, empresa)
+            self._usuario_use_case.crear_propietario(empresa.id, input_dto.correo, input_dto.contrasena)
+            self._suscripcion_use_case.activar_trial(empresa.id, input_dto.plan_id)
+            self._notificacion_use_case.notificar_registro_empresa(input_dto.correo, empresa)
 
         return EmpresaOutputDTO(
             id=empresa.id,
