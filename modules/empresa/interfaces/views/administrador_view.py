@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-
+from shared.infrastructure.permissions import IsSuperAdminOrPropietario
 from modules.usuario.infrastructure.repositories.usuario_repository_impl import DjangoUsuarioRepository
 from modules.usuario.infrastructure.repositories.rol_repository_impl import DjangoRolRepository
 from modules.usuario.infrastructure.services.jwt_service import PasswordService
@@ -11,7 +11,6 @@ from modules.usuario.application.dtos.usuario_dto import CrearUsuarioInputDTO
 from modules.usuario.interfaces.serializers.usuario_serializer import UsuarioOutputSerializer
 from modules.auditoria.infrastructure.repositories.auditoria_repository_impl import DjangoAuditoriaRepository
 from modules.auditoria.application.use_cases.registrar_evento import RegistrarEventoUseCase
-
 from rest_framework import serializers
 from shared.interfaces.base_serializer import BaseSerializer
 
@@ -40,7 +39,7 @@ def _to_output_dto(usuario):
 
 
 class AdministradoresView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSuperAdminOrPropietario]
 
     def get(self, request, empresa_id):
         repo = DjangoUsuarioRepository()

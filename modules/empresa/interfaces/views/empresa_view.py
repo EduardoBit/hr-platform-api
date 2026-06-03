@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from shared.infrastructure.permissions import IsSuperAdmin
+
 
 from modules.empresa.application.dtos.empresa_dto import RegistrarEmpresaInputDTO, ActualizarEmpresaInputDTO
 from modules.empresa.interfaces.serializers.empresa_serializer import (
@@ -88,7 +90,7 @@ class RegistrarEmpresaView(APIView):
 
 
 class EmpresaDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSuperAdmin]
 
     def get(self, request, empresa_id):
         from modules.empresa.domain.exceptions import EmpresaNoEncontradaException
@@ -115,7 +117,7 @@ class EmpresaDetailView(APIView):
 
 
 class SuspenderEmpresaView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSuperAdmin]
 
     def post(self, request, empresa_id):
         from modules.auditoria.infrastructure.repositories.auditoria_repository_impl import DjangoAuditoriaRepository
