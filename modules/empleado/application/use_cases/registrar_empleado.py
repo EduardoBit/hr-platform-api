@@ -73,7 +73,7 @@ class RegistrarEmpleadoUseCase(BaseUseCase[RegistrarEmpleadoInputDTO, EmpleadoOu
     def _generar_codigo_unico(self) -> CodigoUnico:
         while True:
             codigo = CodigoUnico.generate()
-            if not self._empleado_repository.exists_by_codigo_unico(str(codigo)):
+            if not self._empleado_repository.get_by_codigo_unico(str(codigo)):
                 return codigo
 
     def _to_output(self, empleado: Empleado) -> EmpleadoOutputDTO:

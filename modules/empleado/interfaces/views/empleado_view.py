@@ -47,54 +47,71 @@ class EmpleadoListView(APIView):
             page=int(request.query_params.get("page", 1)),
             page_size=int(request.query_params.get("page_size", 20)),
         )
-        outputs = ListarEmpleadosUseCase(DjangoEmpleadoRepository()).execute(input_dto)
+        outputs = ListarEmpleadosUseCase(DjangoEmpleadoRepository(), DjangoSedeRepository()).execute(input_dto)
         return Response(EmpleadoOutputSerializer(outputs, many=True).data)
 
     def post(self, request):
-        serializer = RegistrarEmpleadoSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        d = serializer.validated_data
+        try:
+            serializer = RegistrarEmpleadoSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            d = serializer.validated_data
 
-        class _SuscAdapter:
-            def verificar_limites(self, eid):
-                VerificarLimitesUseCase(DjangoSuscripcionRepository()).execute(eid)
+            class _SuscAdapter:
+                def verificar_limites(self, eid):
+                    VerificarLimitesUseCase(DjangoSuscripcionRepository()).execute(eid)
 
-            def incrementar_usuario(self, _):
-                pass
+                def incrementar_usuario(self, _):
+                    pass
 
-        class _UsuAdapter:
-            def crear_empleado(self, empresa_id, correo, codigo_unico):
-                from modules.usuario.application.use_cases.crear_usuario import CrearUsuarioUseCase
-                from modules.usuario.application.dtos.usuario_dto import CrearUsuarioInputDTO
-                from modules.usuario.infrastructure.repositories.usuario_repository_impl import DjangoUsuarioRepository
-                from modules.usuario.infrastructure.repositories.rol_repository_impl import DjangoRolRepository
-                from modules.usuario.infrastructure.services.jwt_service import PasswordService
-                import secrets, string
-                contrasena = "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
-                uc = CrearUsuarioUseCase(
-                    DjangoUsuarioRepository(), DjangoRolRepository(), PasswordService(), _auditoria()
-                )
-                return uc.execute(CrearUsuarioInputDTO(
-                    empresa_id=empresa_id, rol_nombre="EMPLEADO",
-                    correo=correo, contrasena=contrasena,
-                ))
+            class _UsuAdapter:
+                def crear_empleado(self, empresa_id, correo, codigo_unico):
+                    from modules.usuario.application.use_cases.crear_usuario import CrearUsuarioUseCase
+                    from modules.usuario.application.dtos.usuario_dto import CrearUsuarioInputDTO
+                    from modules.usuario.infrastructure.repositories.usuario_repository_impl import DjangoUsuarioRepository
+                    from modules.usuario.infrastructure.repositories.rol_repository_impl import DjangoRolRepository
+                    from modules.usuario.infrastructure.services.jwt_service import PasswordService
+                    import secrets, string
+                    contrasena = "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
+                    uc = CrearUsuarioUseCase(
+                        DjangoUsuarioRepository(), DjangoRolRepository(), PasswordService(), _auditoria()
+                    )
+                    return uc.execute(CrearUsuarioInputDTO(
+                        empresa_id=empresa_id, rol_nombre="EMPLEADO",
+                        correo=correo, contrasena=contrasena,
+                    ))
 
-        class _NotifAdapter:
-            def notificar_bienvenida_empleado(self, correo, codigo_unico):
-                from modules.notificacion.infrastructure.services.email_service import EmailService
-                EmailService().notificar_bienvenida_empleado(correo, codigo_unico)
+            class _NotifAdapter:
+                def notificar_bienvenida_empleado(self, correo, codigo_unico):
+                    from modules.notificacion.infrastructure.services.email_service import EmailService
+                    EmailService().notificar_bienvenida_empleado(correo, codigo_unico)
 
-        use_case = RegistrarEmpleadoUseCase(
-            empleado_repository=DjangoEmpleadoRepository(),
-            suscripcion_use_case=_SuscAdapter(),
-            usuario_use_case=_UsuAdapter(),
-            auditoria_use_case=_auditoria(),
-            notificacion_use_case=_NotifAdapter(),
-        )
-        output = use_case.execute(RegistrarEmpleadoInputDTO(
-            empresa_id=request.empresa_id, **d
-        ))
-        return Response(EmpleadoOutputSerializer(output).data, status=status.HTTP_201_CREATED)
+            use_case = RegistrarEmpleadoUseCase(
+                empleado_repository=DjangoEmpleadoRepository(),
+                suscripcion_use_case=_SuscAdapter(),
+                usuario_use_case=_UsuAdapter(),
+                auditoria_use_case=_auditoria(),
+                notificacion_use_case=_NotifAdapter(),
+            )
+            output = use_case.execute(RegistrarEmpleadoInputDTO(
+                empresa_id=request.empresa_id, **d
+            ))
+            return Response(EmpleadoOutputSerializer(output).data, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            import traceback
+            error_trace = traceback.format_exc()
+            
+            print("\n" + "="*50)
+            print("🚨 ERROR FATAL AL CREAR EMPLEADO 🚨")
+            print("="*50)
+            print(error_trace)
+            print("="*50 + "\n")
+            
+            return Response({
+                "mensaje": "El backend falló",
+                "error_exacto": str(e),
+                "linea": error_trace.split('\n')[-3:-1] 
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class EmpleadoDetailView(APIView):
@@ -103,9 +120,26 @@ class EmpleadoDetailView(APIView):
     def get(self, request, empleado_id):
         from modules.empleado.domain.exceptions import EmpleadoNoEncontradoException
         from modules.empleado.application.dtos.empleado_dto import EmpleadoOutputDTO
+        from modules.empresa.infrastructure.repositories.sede_repository_impl import DjangoSedeRepository
+        
         empleado = DjangoEmpleadoRepository().get_by_id(empleado_id)
         if not empleado or empleado.empresa_id != request.empresa_id:
             raise EmpleadoNoEncontradoException(str(empleado_id))
+            
+        # --- NUEVO: Buscamos el nombre de la sede para el detalle ---
+        sede_nombre = "Sede no especificada"
+        if empleado.sede_id:
+            try:
+                sede = DjangoSedeRepository().get_by_id(empleado.sede_id)
+                if sede:
+                    if isinstance(sede, dict):
+                        sede_nombre = sede.get('nombre', sede.get('name', "Sede encontrada"))
+                    else:
+                        sede_nombre = getattr(sede, 'nombre', getattr(sede, 'name', "Sede encontrada"))
+            except Exception as e:
+                print(f"Error al buscar sede en detalle: {e}")
+        # ------------------------------------------------------------
+
         output = EmpleadoOutputDTO(
             id=empleado.id, empresa_id=empleado.empresa_id,
             codigo_unico=str(empleado.codigo_unico),
@@ -114,20 +148,11 @@ class EmpleadoDetailView(APIView):
             numero_documento=empleado.documento.value,
             correo=str(empleado.correo), cargo=empleado.cargo,
             area=empleado.area, sede_id=empleado.sede_id,
-            sede_nombre=None, estado=empleado.estado,
+            sede_nombre=sede_nombre,  # ¡Inyectamos el valor real aquí!
+            estado=empleado.estado,
             fecha_ingreso=empleado.fecha_ingreso,
             fecha_creacion=empleado.fecha_creacion,
         )
-        return Response(EmpleadoOutputSerializer(output).data)
-
-    def patch(self, request, empleado_id):
-        serializer = ActualizarEmpleadoSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        use_case = ActualizarEmpleadoUseCase(DjangoEmpleadoRepository(), _auditoria())
-        output = use_case.execute(ActualizarEmpleadoInputDTO(
-            empleado_id=empleado_id, empresa_id=request.empresa_id,
-            **serializer.validated_data,
-        ))
         return Response(EmpleadoOutputSerializer(output).data)
 
 
